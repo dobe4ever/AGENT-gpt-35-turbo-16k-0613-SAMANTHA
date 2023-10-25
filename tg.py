@@ -12,7 +12,7 @@ bot = Bot(token=bot_token)
 
 # start command
 def start(update, context):
-    response = open(os.path.abspath("downloads/start-response.mp3"), "rb")
+    response=open(os.path.abspath("downloads/welcome.mp3"), "rb")
     user_id = update.message.from_user.id
     bot_send_audio(user_id, response)
 

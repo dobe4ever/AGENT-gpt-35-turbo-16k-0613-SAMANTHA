@@ -46,3 +46,5 @@ def restart():
     import subprocess
     SystemExit()
     subprocess.run(["kill", "1"])
+
+
