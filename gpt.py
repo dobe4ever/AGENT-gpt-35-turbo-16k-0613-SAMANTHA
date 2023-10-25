@@ -27,21 +27,19 @@ def chatgpt(user_id, user_message):
     messages_history = load_json("messages_history.json")     
     # Append the new user message to the message history
     messages_history.append({"role": "user", "content": user_message})
-
+    
     # Get the system message + the most recent messages
     context = [messages_history[0]] + messages_history[-10:]
 
     # get chat completion response object
     resp_object = response_object(context)
-    response = resp_object["content"]
-    
     # append response object to message history
-    messages_history.append(response_object)
-
+    messages_history.append(resp_object)
+    
     # save message history back to the json file
     save_json(messages_history, "messages_history.json")
 
-    return response
+    return resp_object["content"]
 
 
 
