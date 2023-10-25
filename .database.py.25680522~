@@ -1,0 +1,79 @@
+from sqlalchemy import create_engine, text
+import datetime
+import random
+from replit import db
+import os
+
+#python3 database.py
+
+remote_db = os.environ['DB_CONNECTION_STRING']
+
+engine = create_engine(remote_db,
+                       connect_args={"ssl": {
+                           "ssl_ca": "/etc/ssl/cert.pem"
+                       }})
+
+# Get the participants list from the database:
+participants = db['participants']
+print("Participants:")
+print(participants)
+#Shuffle the list randomly:
+random.shuffle(participants)
+#Get the first 3 elements as the winners:
+winners = participants[:3]  # set to 3 after testing phase
+print("Winner:")
+print(winners)
+
+
+def add_winners_to_db(winners):
+
+    with engine.connect() as conn:
+
+        for winner in winners:
+
+            user_id = winners['user id']
+            first_name = winners['first name']
+
+            print("Winner id & name: ")
+            print(user_id, first_name)
+
+            # Check if user exists
+            result = conn.execute(
+                text("SELECT * FROM users WHERE user_id = :user_id"),
+                {'user_id': user_id})
+            row = result.fetchone()
+
+            if row:
+                # User exists, update info
+                conn.execute(
+                    text(
+                        "UPDATE users SET public_name = :public_name, active = 1, signup_date = :signup_date, expiration_date = :expiration_date WHERE user_id = :user_id"
+                    ), {
+                        'public_name':
+                        first_name,
+                        'signup_date':
+                        datetime.date.today(),
+                        'expiration_date':
+                        datetime.date.today() + datetime.timedelta(days=30),
+                        'user_id':
+                        user_id
+                    })
+
+            else:
+                # Add new user
+                conn.execute(
+                    text(
+                        "INSERT INTO users (user_id, public_name, signup_date, expiration_date, active) VALUES (:user_id, :public_name, :signup_date, :expiration_date, 1)"
+                    ), {
+                        'user_id':
+                        user_id,
+                        'public_name':
+                        first_name,
+                        'signup_date':
+                        datetime.date.today(),
+                        'expiration_date':
+                        datetime.date.today() + datetime.timedelta(days=30)
+                    })
+
+
+add_winners_to_db(winners=winners)
